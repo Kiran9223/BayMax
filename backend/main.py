@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import users, meals, recipes, nutrition
+from routers import users, meals, recipes, nutrition
 
 app = FastAPI(title="Nutrition Planning API")
 

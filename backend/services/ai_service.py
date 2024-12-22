@@ -1,8 +1,8 @@
 from typing import List
 import google.generativeai as genai
-from app.core.config import settings
-from app.models.meal import Recipe, MealPlan
-from app.models.user import UserPreferences
+from core.config import settings
+from models.meal import Recipe, MealPlan
+from models.user import UserPreferences
 
 class AIService:
     def __init__(self):

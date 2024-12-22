@@ -1,6 +1,6 @@
 from typing import List
-from app.models.meal import Recipe, MealPlan
-from app.models.user import UserPreferences
+from models.meal import Recipe, MealPlan
+from models.user import UserPreferences
 
 class RecommendationService:
     @staticmethod

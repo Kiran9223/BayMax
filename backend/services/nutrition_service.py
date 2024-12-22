@@ -1,5 +1,5 @@
 from typing import List, Dict
-from app.models.meal import NutritionInfo
+from models.meal import NutritionInfo
 
 class NutritionService:
     @staticmethod

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from app.models.meal import Recipe
+from models.meal import Recipe
 from typing import List
-from app.services.ai_service import AIService
+from services.ai_service import AIService
 
 router = APIRouter()
 

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.models.user import UserCreate, User, UserPreferences
+from models.user import UserCreate, User, UserPreferences
 from typing import List
 
 router = APIRouter()
