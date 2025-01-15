@@ -10,4 +10,5 @@ class RecipeResponse(BaseModel):
     recipe_title: str
     ingredients: List[str]
     instructions: List[str]
+    cooking_time: Optional[str] = None
     # optional extra fields like cooking_time, nutritional_info, etc.

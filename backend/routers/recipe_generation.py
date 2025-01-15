@@ -1,32 +1,10 @@
-# from fastapi import APIRouter
-# from models.meal import Recipe
-# from typing import List
-# from services.ai_service import AIService
-
-# router = APIRouter()
-
-# @router.get("/{recipe_id}", response_model=Recipe)
-# async def get_recipe(recipe_id: int):
-#     """Get recipe details"""
-#     pass
-
-# @router.get("/search", response_model=List[Recipe])
-# async def search_recipes(query: str, dietary_restrictions: List[str] = None):
-#     """Search recipes with filters"""
-#     pass
-
-# @router.post("/generate", response_model=Recipe)
-# async def generate_recipe(ingredients: List[str]):
-#     """Generate a recipe from available ingredients"""
-#     ai_service = AIService()
-#     recipe = await ai_service.generate_recipe(ingredients, restrictions)
-#     pass
-
 from fastapi import APIRouter, Depends, HTTPException, status
 import json
 import re
 from schemas.recipe import RecipeGenerationRequest, RecipeResponse
 from services.ai_service import generate_recipe_with_llm
+from database import recipes_collection, nutritional_info_collection
+from services.nutrition_service import NutritionService
 
 router = APIRouter(prefix="/recipe", tags=["Recipe Generation"])
 
@@ -55,35 +33,41 @@ async def generate_recipe(request: RecipeGenerationRequest):
     result = RecipeResponse(
         recipe_title=recipe_data["recipe_title"],
         ingredients=recipe_data["ingredients"],
-        instructions=recipe_data["instructions"]
+        instructions=recipe_data["instructions"],
+        cooking_time=recipe_data["cooking_time"]
     )
+
+    recipe_doc = {
+        "recipe_title": recipe_data["recipe_title"],
+        "ingredients": recipe_data["ingredients"],
+        "instructions": recipe_data["instructions"],
+        "cooking_time": recipe_data["cooking_time"]
+    }
+    
+    insert_recipe_doc = await recipes_collection.insert_one(recipe_doc)
+
+    recipe_id = insert_recipe_doc.inserted_id
+
+    nutritional_info_cleaned = await NutritionService.get_nutritional_info(recipe_data["nutritional_info"])
+
+    if nutritional_info_cleaned is None:
+        nutritional_info_cleaned = {
+            "calories": None,
+            "protein": None,
+            "fat": None,
+            "carbohydrates": None
+        }
+
+    nutritional_info_doc = {
+        "recipe_id": recipe_id,
+        "calories": nutritional_info_cleaned["calories"],
+        "protein": nutritional_info_cleaned["protein"],
+        "fat": nutritional_info_cleaned["fat"],
+        "carbohydrates": nutritional_info_cleaned["carbs"]
+    }
+
+    insert_nutritional_info_doc = await nutritional_info_collection.insert_one(nutritional_info_doc)
+
 
     return result
 
-    # # Construct the response
-    # # If the model didn't return the correct structure, handle error or fallback
-    # if "recipe_title" not in recipe_data or "ingredients" not in recipe_data or "instructions" not in recipe_data:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         detail="Failed to generate a valid recipe."
-    #     )
-    
-    # return RecipeResponse(**recipe_data)
-    # if isinstance(recipe_data, str):
-    #     try:
-    #         recipe_data = json.loads(recipe_data)
-    #     except json.JSONDecodeError:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #             detail="Failed to parse recipe data."
-    #         )
-
-    # # Construct the response
-    # # If the model didn't return the correct structure, handle error or fallback
-    # if "recipe_title" not in recipe_data or "ingredients" not in recipe_data or "instructions" not in recipe_data:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         detail="Failed to generate a valid recipe."
-    #     )
-    
-    # return RecipeResponse(**recipe_data)
