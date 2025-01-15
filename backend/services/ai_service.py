@@ -51,25 +51,26 @@
 #         response = await self.model.generate_content(prompt)
 #         return [alt.strip() for alt in response.text.split(',')]
 
-
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
-
-load_dotenv()
-
 # Load your environment variable for OpenAI API key
 # openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize the OpenAI client
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+# client = OpenAI(
+#     api_key=os.getenv("OPENAI_API_KEY")
+# )
+
+
 
 # client = OpenAI(
 #     api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
 # )
 
+import os
+from openai import OpenAI
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 async def generate_recipe_with_llm(
     ingredients: list, 
@@ -96,31 +97,49 @@ async def generate_recipe_with_llm(
         "adheres to the allergen restrictions, and follows the cuisine preference if any. "
         "Return the recipe in a structured JSON format with the fields: "
         "`recipe_title`, `ingredients` (list), `instructions` (list)."
+        '''"Please return ONLY valid JSON with the following fields:
+        {
+        "recipe_title": `recipe_title`,
+        "ingredients": `ingredients` (list),
+        "instructions": `instructions` (list)
+        }
+        No additional commentary or explanation. Only valid JSON."'''
     )
+
+    
+
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    response = model.generate_content(base_prompt)
+
+    # print(type(response.text))
+    # print(response.text)
+
+    return response.text
 
     # Call the OpenAI Completion API (example with chat-based endpoint)
-    response = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": "You are a helpful and creative culinary assistant."},
-            {"role": "user", "content": base_prompt},
-        ],
-        model="davinci-002",
-        temperature=0.7  # Adjust creativity level
-    )
+    # response = client.chat.completions.create(
+    #     messages=[
+    #         {"role": "system", "content": "You are a helpful and creative culinary assistant."},
+    #         {"role": "user", "content": base_prompt},
+    #     ],
+    #     model="davinci-002",
+    #     temperature=0.7  # Adjust creativity level
+    # )
     
     # Extract the LLM's reply
-    content = response["choices"][0]["message"]["content"]
+    # content = response["choices"][0]["message"]["content"]
 
-    # content might be a string that looks like JSON. We need to parse it safely.
-    import json
-    try:
-        recipe_data = json.loads(content)
-    except json.JSONDecodeError:
-        # If parsing fails, we can handle or return an error response
-        recipe_data = {
-            "recipe_title": "Recipe",
-            "ingredients": [f"Unable to parse: {content}"],
-            "instructions": []
-        }
+    # # content might be a string that looks like JSON. We need to parse it safely.
+    # import json
+    # try:
+    #     recipe_data = json.loads(content)
+    # except json.JSONDecodeError:
+    #     # If parsing fails, we can handle or return an error response
+    #     recipe_data = {
+    #         "recipe_title": "Recipe",
+    #         "ingredients": [f"Unable to parse: {content}"],
+    #         "instructions": []
+    #     }
 
-    return recipe_data
+    # return recipe_data
