@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import recipe_generation, nutrition
+from routers import recipe_generation, nutrition, meal_plan_generation
 # from fastapi.middleware.cors import CORSMiddleware
 # from routers import users, meals, nutrition
 
@@ -19,4 +19,5 @@ app = FastAPI(title="Nutrition Planning API", version="1.0.0")
 # app.include_router(meals.router, prefix="/api/meals", tags=["meals"])
 app.include_router(recipe_generation.router)
 app.include_router(nutrition.router)
+app.include_router(meal_plan_generation.router)
 # app.include_router(nutrition.router, prefix="/api/nutrition", tags=["nutrition"])

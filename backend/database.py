@@ -7,3 +7,4 @@ db = client["baymax"]
 
 recipes_collection = db["recipes"]
 nutritional_info_collection = db["nutritionalinfo"]
+meal_plan_collection = db["mealplans"]
