@@ -7,32 +7,22 @@ from schemas.nutritional_info import NutritionalInfoResponse
 
 router = APIRouter(prefix="/nutrition", tags=["Analyse Nutrional Info"])
 
-@router.get("/{recipe_id}", response_model=list[NutritionalInfoResponse])
-async def get_nutritional_info_for_recipe(recipe_id: str):
+@router.get("/{recipe_id}", response_model=NutritionalInfoResponse)
+async def get_nutritional_info(recipe_id: str):
     """
-    Returns all nutritional info documents for the given recipe ID.
+    Get nutritional information for a recipe.
     """
-    try:
-        recipe_object_id = ObjectId(recipe_id)
-    except:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid recipe ID."
-        )
-    # Find all entries in 'nutritionalinfo' with the specified recipeId
-    print(recipe_object_id)
-    cursor = nutritional_info_collection.find({"recipe_id": recipe_object_id})
-    docs = await cursor.to_list(length=100)  # or whatever limit
+    # Fetch the nutritional info for the given recipe_id
+    nutritional_info = await nutritional_info_collection.find_one({"_id": ObjectId(recipe_id)})
+    if nutritional_info is None:
+        raise HTTPException(status_code=404, detail="Nutritional info not found.")
+    
+    response = NutritionalInfoResponse(
+        recipe_id=str(nutritional_info["_id"]),
+        calories=nutritional_info["calories"],
+        protein=nutritional_info["protein"],
+        fat=nutritional_info["fat"],
+        carbs=nutritional_info["carbohydrates"]
+    )
 
-    # Convert each doc to the Pydantic response model
-    results = []
-    for d in docs:
-        d["_id"] = d.get("_id")  # ensure _id is present
-        try:
-            resp = NutritionalInfoResponse(**d)
-            results.append(resp)
-        except ValidationError as e:
-            # Optionally skip or handle invalid docs
-            pass
-
-    return results
+    return response

@@ -7,11 +7,8 @@ class NutritionalInfoResponse(BaseModel):
     """
     Fields we return to the client after creating/fetching nutrition data.
     """
-    recipe_id: ObjectId
+    recipe_id: str
     calories: float
     protein: float
     fat: float
     carbs: float
-
-    class Config:
-        allow_population_by_field_name = True
